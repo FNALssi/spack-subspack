@@ -1,6 +1,8 @@
 import os
 import glob
+import shutil
 import time
+
 import spack.config
 import spack.util.path
 import llnl.util.tty as tty
@@ -20,6 +22,7 @@ def make_subspack(args):
     clone_various_configs(prefix, args)
     symlink_environments(prefix,args)
     copy_local_environments(prefix,args)
+    add_local_setup_env(prefix,args)
 
 def quick_clone(prefix, args):
     if not args.remote:
@@ -36,13 +39,17 @@ def merge_upstreams(prefix, args):
         any upstreams we have """
     # start with our upstreams, if any...
     upstream_data = config.get("upstreams", None)
-    print(f"Got upstream data: {repr(upsstream_data)}")
+    print(f"Got upstream data: {repr(upstream_data)}")
     if upstream_data is None:
         upstream_data = { "upstreams": {} }
     else:
         upstream_data = { "upstreams": upstream_data }
 
-    upstream_inst_root = config.get("config:install_tree:root")
+    upstream_inst_root = ( 
+           config.get("config:install_tree:root")
+              .replace("$spack",os.environ["SPACK_ROOT"])
+    )
+
     if config.get("config:padded_length",0) > 0:
         # find __...padded directories add to upstream_inst_root...
         pass
@@ -55,7 +62,7 @@ def merge_upstreams(prefix, args):
     ds=str(time.time())
     upstream_data["upstreams"][f"spack_{ds}"] = {
          "install_tree": upstream_inst_root,
-         "modules:": { "tcl": tcl_modules },
+         "modules": { "tcl": tcl_modules },
       }
 
     with open(f"{prefix}/etc/spack/upstream.yaml", "w") as f:
@@ -100,7 +107,7 @@ def copy_local_environments(prefix, args):
             for f in ["spack.yaml", "spack.lock"]:
                 fp = f"{srcd}/{f}"
                 lfp = f"{dstd}/{f}"
-                if os.path.exits(fp):
+                if os.path.exists(fp):
                     shutil.copyfile(fp, lfp)
         else:
             tty.error(f"No source environment {base}")
@@ -111,3 +118,17 @@ def copy_local_environments(prefix, args):
         for p in args.dev_pkg:
             os.system(f"{prefix}/bin/spack --env local_{base} develop {p}@develop")
     
+def add_local_setup_env(prefix,args):
+     with open(f"{prefix}/setup-env.sh", "w") as shf:
+         shf.write(f"""
+export SPACK_SKIP_MODULES=true
+export SPACK_DISABLE_LOCAL_CONFIG=true
+. {prefix}/share/spack/setup-env.sh
+""")
+     with open(f"{prefix}/setup-env.csh", "w") as shf:
+         shf.write(f"""
+setenv SPACK_SKIP_MODULES true
+setenv SPACK_DISABLE_LOCAL_CONFIG true
+source {prefix}/share/spack/setup-env.sh
+""")
+
