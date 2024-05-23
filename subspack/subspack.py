@@ -65,7 +65,7 @@ def merge_upstreams(prefix, args):
          "modules": { "tcl": tcl_modules },
       }
 
-    with open(f"{prefix}/etc/spack/upstream.yaml", "w") as f:
+    with open(f"{prefix}/etc/spack/upstreams.yaml", "w") as f:
         syaml.dump(upstream_data, f)
 
 def clone_various_configs(prefix, args):
