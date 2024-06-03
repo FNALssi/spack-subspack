@@ -1,6 +1,7 @@
 import sys
 import spack.config
-from  spack.extensions import subspack as sext
+from spack.extensions import subspack as sext
+
 
 def setup_parser(subparser):
 
@@ -15,13 +16,18 @@ def setup_parser(subparser):
     subparser.add_argument(
         "--local-env",
         action="append",
-        default = []
+        default = [],
         help="environment(s) to make local versions of"
+    )
+    subparser.add_argument(
+        "--remote",
+        default = None,
+        help="git remote to clone from"
     )
     subparser.add_argument(
         "--dev-pkg",
         action="append",
-        default = []
+        default = [],
         help="packages to setup with spack develop"
     )
     subparser.add_argument(
