@@ -1,6 +1,6 @@
 
 
-== Spack-subspack ==
+## Spack-subspack
 
 Tool to maked "subspack" instances; a new spack area which
 is connected via "upstream.yaml" configs ton an existing spack
@@ -11,7 +11,7 @@ This includes:
 * attaching the curent spack instance as an upstream
 * symlinking existing environments in the new instance
 
-=== Usage ====
+### Usage
 
 In most cases you can just do:
 
