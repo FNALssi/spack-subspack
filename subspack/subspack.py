@@ -36,7 +36,7 @@ def quick_clone(prefix, args):
     
     with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
          branch = bf.read().strip().strip('*')
-    cmd = f"git clone -d 2 -b {branch} --recurse-submodules {args.remote} {prefix}"
+    cmd = f"git clone --depth 2 -b {branch} --recurse-submodules {args.remote} {prefix}"
     tty.debug(f"Cloning with: {cmd}")
     os.system( cmd )
 
