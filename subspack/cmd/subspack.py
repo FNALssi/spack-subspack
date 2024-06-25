@@ -2,6 +2,9 @@ import sys
 import spack.config
 from spack.extensions import subspack as sext
 
+description = "make a development spack with current spack as upstream"
+section = "basic"
+level = "short"
 
 def setup_parser(subparser):
 
