@@ -28,7 +28,14 @@ def make_subspack(args):
     copy_local_environments(prefix,args)
     tty.debug("adding wrapped setup-env.* scritsp:")
     add_local_setup_env(prefix,args)
+    tty.debug("adding padding if requested")
+    add_padding(prefix, args)
 
+
+def add_padding(prefix, args):
+    if args.with_padding:
+         with os.popen(f"{prefix}/etc/spack/config.yaml", "w") as fco:
+             fco.write("config:\n  install_tree:\n    padded_length: 255\n")
 
 def quick_clone(prefix, args):
     if not args.remote:
@@ -56,7 +63,7 @@ def merge_upstreams(prefix, args):
               .replace("$spack",os.environ["SPACK_ROOT"])
     )
 
-    if config.get("config:padded_length",0) > 0:
+    if config.get("config:install_tree:padded_length",0) > 0:
         # find __...padded directories add to upstream_inst_root...
         pass
 
