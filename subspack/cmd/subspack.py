@@ -1,6 +1,6 @@
 import sys
 import spack.config
-from spack.extensions import subspack as sext
+from spack.extensions import subspack as subspackext
 
 
 def setup_parser(subparser):
@@ -38,4 +38,4 @@ def setup_parser(subparser):
     
 def subspack(parser, args):
     #print("parser is " + repr(parser) + "args: " + repr(args))
-    sext.make_subspack(args)
+    subspackext.make_subspack(args)
