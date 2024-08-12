@@ -9,6 +9,7 @@ import spack.util.path
 import llnl.util.tty as tty
 import spack.util.spack_yaml as syaml
 import spack.util.path
+import spack.util.git
 
 
 config = spack.config.CONFIG
@@ -38,14 +39,20 @@ def add_padding(prefix, args):
              fco.write("config:\n  install_tree:\n    padded_length: 255\n")
 
 def quick_clone(prefix, args):
+    branch = None
     if not args.remote:
          args.remote = os.environ["SPACK_ROOT"] + "/.git"
     
-    with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
-         branch = bf.read().strip().strip('*')
-    cmd = f"git clone --depth 2 -b {branch} --recurse-submodules {args.remote} {prefix}"
-    tty.debug(f"Cloning with: {cmd}")
-    os.system( cmd )
+    if args.remote.startswith("/"):
+        with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
+             branch = bf.read().strip().strip('*')
+
+    git= spack.util.git.git(required=True)
+    args=["clone","--depth", "2", args.remote, prefix]
+    if branch:
+        args[1:1] = ["-b", branch]
+    tty.debug(f"Cloning with: git {args.join(' ')}")
+    git(*args)
 
 def merge_upstreams(prefix, args):
     """ generate upstreams.yaml pointing to us including
