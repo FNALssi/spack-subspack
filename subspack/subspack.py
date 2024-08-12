@@ -35,7 +35,7 @@ def make_subspack(args):
 
 def add_padding(prefix, args):
     if args.with_padding:
-         with os.popen(f"{prefix}/etc/spack/config.yaml", "w") as fco:
+         with open(f"{prefix}/etc/spack/config.yaml", "w") as fco:
              fco.write("config:\n  install_tree:\n    padded_length: 255\n")
 
 def quick_clone(prefix, args):
@@ -45,13 +45,14 @@ def quick_clone(prefix, args):
     
     if args.remote.startswith("/"):
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
-             branch = bf.read().strip().strip('*')
+             branch = bf.read().strip(' *\n')
+        args.remote = "file://" + args.remote
 
     git= spack.util.git.git(required=True)
     args=["clone","--depth", "2", args.remote, prefix]
     if branch:
         args[1:1] = ["-b", branch]
-    tty.debug(f"Cloning with: git {args.join(' ')}")
+    tty.debug(f"Cloning with: git {' '.join(args)}")
     git(*args)
 
 def merge_upstreams(prefix, args):
