@@ -105,7 +105,7 @@ def clone_various_configs(prefix, args):
     # sorry, some things are just easier in shell...
     os.system(f""" 
         cd $SPACK_ROOT && 
-        find etc/spack -name [pc][ao][cm][kp]*.yaml -print |
+        find etc/spack -name [pcm][aoi][cmr][kpr]*.yaml -print |
            cpio -dump {prefix}
     """)
     
