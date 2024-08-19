@@ -19,6 +19,10 @@ def make_subspack(args):
     prefix = spack.util.path.canonicalize_path(args.prefix)
     tty.debug("Cloning spack repo...")
     quick_clone(prefix, args)
+    tty.debug("Cloning extensions...")
+    quick_clone_ext(prefix, args)
+    tty.debug("Cloning repos...")
+    quick_clone_repo(prefix, args)
     tty.debug("Merging upstreams files...")
     merge_upstreams(prefix,args)
     tty.debug("Cloning configs...")
@@ -54,6 +58,31 @@ def quick_clone(prefix, args):
         args[1:1] = ["-b", branch]
     tty.debug(f"Cloning with: git {' '.join(args)}")
     git(*args)
+
+def quick_repos(prefix, args):
+    git= spack.util.git.git(required=True)
+    roots = spack.config.get("repos", scope=None)
+    repos = []
+    for r in roots
+        try:
+            repos.append(spack.repo.Repo(r)
+        except spack.repo.RepoError:
+            continue
+    for repo in repos:
+        if os.path.exists(f"{repo.root}/.git"):
+  
+        dest = f"{prefix}/var/spack/repos/{repo.namespace}"
+        git("clone","--depth", "2", repo.root, dest)
+
+def quick_extensions(prefix, args):
+    git= spack.util.git.git(required=True)
+    roots = spack.extensions.get_extension_paths() 
+    for path in roots:
+        ext = os.path.basename(ext)
+        if os.path.exists(f"{path}/.git"):
+  
+        dest = f"{prefix}/var/spack/extensions/{ext}"
+        git("clone","--depth", "2", repo.root, dest)
 
 def merge_upstreams(prefix, args):
     """ generate upstreams.yaml pointing to us including
