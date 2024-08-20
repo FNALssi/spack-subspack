@@ -76,7 +76,8 @@ def quick_clone_repos(prefix, args):
         except spack.repo.RepoError:
             continue
     for repo in repos:
-        dest = f"{prefix}/var/spack/repos/{repo.namespace}"
+        base=os.path.basename(repo.root)
+        dest = f"{prefix}/var/spack/repos/{base}"
         if os.path.exists(f"{repo.root}/.git"):
             git("clone", "-q", "--depth", "2", f"file://{repo.root}", dest)
         elif not os.path.exists(dest):
@@ -147,7 +148,7 @@ def clone_various_configs(prefix, args):
     os.system(
         f""" 
         cd $SPACK_ROOT && 
-        find etc/spack -name [pcm][aoi][cmr][kpr]*.yaml -print |
+        find etc/spack -name [pcm][aoi][cmnr][kfpr]*.yaml -print |
            cpio -dump {prefix}
     """
     )
