@@ -79,7 +79,7 @@ def quick_clone_repos(prefix, args):
         dest = f"{prefix}/var/spack/repos/{repo.namespace}"
         if os.path.exists(f"{repo.root}/.git"):
             git("clone", "-q", "--depth", "2", f"file://{repo.root}", dest)
-        else if not os.path.exists(dest):
+        elif not os.path.exists(dest):
             # non-git repo, and not already there, symlink it? 
             os.symlink(repo.root, dest)
 
@@ -92,7 +92,7 @@ def quick_clone_ext(prefix, args):
         if os.path.exists(f"{path}/.git"):
             dest = f"{prefix}/var/spack/extensions/{base}"
             git("clone", "-q", "--depth", "2", f"file://{path}", dest)
-        else if not os.path.exists(dest):
+        elif not os.path.exists(dest):
             # non-git repo, and not already there, symlink it? 
             os.symlink(path, dest)
 
