@@ -73,7 +73,7 @@ def quick_clone_repos(prefix, args):
     repos = []
     for r in roots:
         try:
-            repos.append(spack.repo.Repo(r))
+            repos.append(spack.repo.from_path(r))
         except spack.repo.RepoError:
             continue
     for repo in repos:
@@ -82,7 +82,7 @@ def quick_clone_repos(prefix, args):
         if os.path.exists(f"{repo.root}/.git"):
             git("clone", "-q", "--depth", "2", f"file://{repo.root}", dest)
         elif not os.path.exists(dest):
-            # non-git repo, and not already there, symlink it? 
+            # non-git repo, and not already there, symlink it?
             os.symlink(repo.root, dest)
 
 
@@ -95,7 +95,7 @@ def quick_clone_ext(prefix, args):
             dest = f"{prefix}/var/spack/extensions/{base}"
             git("clone", "-q", "--depth", "2", f"file://{path}", dest)
         elif not os.path.exists(dest):
-            # non-git repo, and not already there, symlink it? 
+            # non-git repo, and not already there, symlink it?
             os.symlink(path, dest)
 
 
@@ -147,8 +147,8 @@ def clone_various_configs(prefix, args):
     # the -name arg is boot*.yaml pack*.yaml comp*.yaml interleaved..
     # sorry, some things are just easier in shell...
     os.system(
-        f""" 
-        cd $SPACK_ROOT && 
+        f"""
+        cd $SPACK_ROOT &&
         find etc/spack -name [pcm][aoi][cmnr][kfpr]*.yaml -print |
            cpio -dump {prefix}
     """
