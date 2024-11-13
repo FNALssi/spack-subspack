@@ -49,15 +49,16 @@ def add_padding(prefix, args):
 def quick_clone(prefix, args):
     """ clone the spack repo, shallow etc."""
     branch = None
+    git = spack.util.git.git(required=True)
     if not args.remote:
-        args.remote = os.environ["SPACK_ROOT"]
+        args.remote = os.environ["SPACK_ROOT"]+"/.git"
+        git("config","--global","--add", "safe.directory", args.remote)
 
     if args.remote.startswith("/"):
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
             branch = bf.read().strip(" *\n")
         args.remote = "file://" + args.remote
 
-    git = spack.util.git.git(required=True)
     args = ["clone", "-q", "--depth", "2", args.remote, prefix]
     if branch:
         args[1:1] = ["-b", branch]
