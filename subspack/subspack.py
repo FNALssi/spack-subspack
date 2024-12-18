@@ -40,19 +40,19 @@ def make_subspack(args):
 
 
 def add_padding(prefix, args):
-    """ turn on standard Fermi build-instance padding """
+    """turn on standard Fermi build-instance padding"""
     if args.with_padding:
         with open(f"{prefix}/etc/spack/config.yaml", "w") as fco:
             fco.write("config:\n  install_tree:\n    padded_length: 255\n")
 
 
 def quick_clone(prefix, args):
-    """ clone the spack repo, shallow etc."""
+    """clone the spack repo, shallow etc."""
     branch = None
     git = spack.util.git.git(required=True)
     if not args.remote:
-        args.remote = os.environ["SPACK_ROOT"]+"/.git"
-        git("config","--global","--add", "safe.directory", args.remote)
+        args.remote = os.environ["SPACK_ROOT"] + "/.git"
+        git("config", "--global", "--add", "safe.directory", args.remote)
 
     if args.remote.startswith("/"):
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
@@ -67,7 +67,7 @@ def quick_clone(prefix, args):
 
 
 def quick_clone_repos(prefix, args):
-    """ clone the other recipe repositories """
+    """clone the other recipe repositories"""
     git = spack.util.git.git(required=True)
     roots = spack.config.get("repos", scope=None)
     repos = []
@@ -77,7 +77,7 @@ def quick_clone_repos(prefix, args):
         except spack.repo.RepoError:
             continue
     for repo in repos:
-        base=os.path.basename(repo.root)
+        base = os.path.basename(repo.root)
         dest = f"{prefix}/var/spack/repos/{base}"
         if os.path.exists(f"{repo.root}/.git"):
             git("clone", "-q", "--depth", "2", f"file://{repo.root}", dest)
