@@ -53,7 +53,8 @@ ds = int(time.time())
 def args1():
     return fakeargs(
         prefix = f"/tmp/dstrepo{ds}", 
-        remote = f"/tmp/srcrepo{ds}"
+        remote = f"/tmp/srcrepo{ds}",
+        with_padding = False,
     )
 
 @pytest.fixture
@@ -83,6 +84,7 @@ def args2():
         local_env = [ f"env1{ds}" ], 
         dev_pkg = [ "watch@master" ], 
         remote = os.environ["SPACK_ROOT"]+"/.git",
+        with_padding = False,
     )
     
 @pytest.fixture

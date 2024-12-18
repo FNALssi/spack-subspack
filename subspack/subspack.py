@@ -11,7 +11,7 @@ import spack.util.spack_yaml as syaml
 import spack.util.path
 import spack.util.git
 import spack.extensions
-
+import spack.repo
 
 config = spack.config.CONFIG
 
@@ -73,7 +73,7 @@ def quick_clone_repos(prefix, args):
     repos = []
     for r in roots:
         try:
-            repos.append(spack.repo.from_path(r))
+            repos.append(spack.repo.Repo(r))
         except spack.repo.RepoError:
             continue
     for repo in repos:
