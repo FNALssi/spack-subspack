@@ -72,18 +72,15 @@ def quick_clone_repos(prefix, args):
     roots = spack.config.get("repos", scope=None)
     repos = []
     for r in roots:
-        try:
-            repos.append(spack.repo.Repo(r))
-        except spack.repo.RepoError:
-            continue
+        repos.append(r)
     for repo in repos:
-        base=os.path.basename(repo.root)
+        base=os.path.basename(str(repo))
         dest = f"{prefix}/var/spack/repos/{base}"
-        if os.path.exists(f"{repo.root}/.git"):
+        if os.path.exists(f"{str(repo)}/.git"):
             git("clone", "-q", "--depth", "2", f"file://{repo.root}", dest)
         elif not os.path.exists(dest):
             # non-git repo, and not already there, symlink it?
-            os.symlink(repo.root, dest)
+            os.symlink(str(repo), dest)
 
 
 def quick_clone_ext(prefix, args):
@@ -150,7 +147,7 @@ def clone_various_configs(prefix, args):
         f"""
         cd $SPACK_ROOT &&
         find etc/spack -name [pcm][aoi][cmnr][kfpr]*.yaml -print |
-           cpio -dump {prefix}
+           cpio --quiet -dump {prefix} 
     """
     )
 
@@ -159,7 +156,7 @@ def clone_various_configs(prefix, args):
         root = spack.util.path.canonicalize_path(root)
 
     with tmp_env("SPACK_ROOT", prefix):
-        os.system(f"{prefix}/bin/spack bootstrap root {root}")
+        os.system(f"{prefix}/bin/spack bootstrap root {root} > /dev/null")
 
 
 def symlink_environments(prefix, args):
