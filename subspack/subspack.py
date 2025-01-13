@@ -75,7 +75,7 @@ def quick_clone_repos(prefix, args):
         repos.append(r)
     for repo in repos:
         repo = str(repo)
-        repo = repo.sub('$spack', os.environ['SPACK_ROOT'])
+        repo = repo.replace('$spack', os.environ['SPACK_ROOT'])
         base=os.path.basename(repo)
         dest = f"{prefix}/var/spack/repos/{base}"
         if os.path.exists(f"{repo}/.git"):
