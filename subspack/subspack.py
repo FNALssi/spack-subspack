@@ -146,10 +146,17 @@ def clone_various_configs(prefix, args):
     # clone packages, compilers...
     # the -name arg is boot*.yaml pack*.yaml comp*.yaml interleaved..
     # sorry, some things are just easier in shell...
+    if args.without_caches:
+        # interleaved pack/conf/comp
+        pattern="[pc][ao][cmn][kfp]*.yaml"
+    else:
+        # interleaved pack/conf/comp/mirr
+        pattern="[pcm][aoi][cmnr][kfpr]*.yaml"
+
     os.system(
         f"""
         cd $SPACK_ROOT &&
-        find etc/spack -name [pcm][aoi][cmnr][kfpr]*.yaml -print |
+        find etc/spack -name {pattern} -print |
            cpio -dump {prefix}
     """
     )

@@ -12,13 +12,22 @@ def setup_parser(subparser):
     scopes = spack.config.scopes()
 
     subparser.add_argument(
+        "--without-caches",
+        "--without_caches",
+        action="store_true",
+        default=False,
+        help="omit mirrors.yaml copies to subpack instance",
+    )
+    subparser.add_argument(
         "--with-padding",
+        "--with_padding",
         action="store_true",
         default=False,
         help="include diretory padding in config",
     )
     subparser.add_argument(
         "--local-env",
+        "--local_env",
         action="append",
         default=[],
         help="environment(s) to make local versions of",
@@ -26,6 +35,7 @@ def setup_parser(subparser):
     subparser.add_argument("--remote", default=None, help="git remote to clone from")
     subparser.add_argument(
         "--dev-pkg",
+        "--dev_pkg",
         action="append",
         default=[],
         help="packages to setup with spack develop",
