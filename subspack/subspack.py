@@ -6,7 +6,10 @@ from contextlib import contextmanager
 
 import spack.config
 import spack.util.path
-import llnl.util.tty as tty
+try:
+    import spack.llnl.util.tty as tty
+except:
+    import llnl.util.tty as tty
 import spack.util.spack_yaml as syaml
 import spack.util.path
 import spack.util.git
@@ -79,13 +82,16 @@ def add_padding(prefix, args):
 
 def quick_clone(prefix, args):
     """clone the spack repo, shallow etc."""
-    branch = None
+    if args.remote_branch:
+        branch = args.remote_branch
+    else:
+        branch = None
     git = spack.util.git.git(required=True)
     if not args.remote:
         args.remote = os.environ["SPACK_ROOT"] + "/.git"
         git("config", "--global", "--add", "safe.directory", args.remote)
 
-    if args.remote.startswith("/"):
+    if args.remote.startswith("/") and not branch:
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
             branch = bf.read().strip(" *\n")
         args.remote = "file://" + args.remote
@@ -102,18 +108,29 @@ def quick_clone_repos(prefix, args):
     git = spack.util.git.git(required=True)
     roots = spack.config.get("repos", scope=None)
     repos = []
-    for r in roots:
-        repos.append(r)
-    for repo in repos:
-        repo = str(repo)
-        repo = repo.replace('$spack', os.environ['SPACK_ROOT'])
-        base=os.path.basename(repo)
-        dest = f"{prefix}/var/spack/repos/{base}"
-        if os.path.exists(f"{repo}/.git"):
-            git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
-        elif not os.path.exists(dest):
-            # non-git repo, and not already there, symlink it?
-            os.symlink(repo, dest)
+    if isinstance(roots, dict):
+        for repo_name in repos:
+            base = repo_name
+            dest = repos[repo_name]["destination"]
+            if os.path.exists(f"{dest}/.git"):
+                git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
+            else:
+                # non-git repo, and not already there, symlink it?
+                src = dest.replace('$spack', os.environ['SPACK_ROOT'])
+                os.symlink(src, dest)
+    else:
+        for r in roots:
+            repos.append(r)
+        for repo in repos:
+            src = str(repo)
+            repo = src.replace('$spack', os.environ['SPACK_ROOT'])
+            base=os.path.basename(repo)
+            dest = f"{prefix}/var/spack/repos/{base}"
+            if os.path.exists(f"{dest}/.git"):
+                git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
+            elif not os.path.exists(dest):
+                # non-git repo, and not already there, symlink it?
+                os.symlink(src, dest)
 
 
 def quick_clone_ext(prefix, args):
