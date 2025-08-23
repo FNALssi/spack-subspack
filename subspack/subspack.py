@@ -55,10 +55,11 @@ def add_upstream(prefix, spack_root):
         with popen(cmd, "r") as f:
              upstream_config = syaml.load(f)
          
-        upstream_inst_root = upstream_config.get("config:install_tree:root").replace("$spack", r)
-        tcl_modules = upstream_config.get(
-            "modules:default:roots:tcl", f"{prefix}/share/spack/modules"
-        )
+        upstream_inst_root = upstream_config["config"]["install_tree"]["root"].replace("$spack", r)
+        if upstream_config.get("modules", {}).get("default",{}).get("roots",{}).get("tcl",""):
+            tcl_modules = upstream_config["modules"]["default"]["roots"]["tcl"].replace("$spack", r)
+        else:
+            tcl_modules = f"{r}/share/spack/modules"
 
         upstream_data["upstreams"][f"spack_{count}"] = {
             "install_tree": upstream_inst_root,
