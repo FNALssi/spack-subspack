@@ -37,22 +37,22 @@ def make_subspack(args):
     add_local_setup_env(prefix, args)
     tty.debug("adding padding if requested")
     add_padding(prefix, args)
-    for spack_root in args.add_upstream:
-        tty.debug("adding upstream: ", spack_root)
-        add_upstream(prefix, spack_root)
+    add_upstream(prefix, args.add_upstream)
 
-def add_upstream(prefix, spack_root):
+def add_upstream(prefix, spack_roots):
     # get current upstreams
     with open(f"{prefix}/etc/spack/upstreams.yaml", "r") as f:
         upstream_data = syaml.load(f)
 
     count=0
-    for r in spack_root:
+    for r in spack_roots:
+        tty.debug("adding upstream: ", r)
+
         count = count + 1
 
         # read config.yaml data from desired upstream
         cmd = f"SPACK_ROOT={r} spack config get config"
-        with popen(cmd, "r") as f:
+        with os.popen(cmd, "r") as f:
              upstream_config = syaml.load(f)
          
         upstream_inst_root = upstream_config["config"]["install_tree"]["root"].replace("$spack", r)
