@@ -41,6 +41,12 @@ def setup_parser(subparser):
         help="packages to setup with spack develop",
     )
     subparser.add_argument(
+        "--add-upstream",
+        action="append",
+        default=[],
+        help="additional spack instances to add as upstreams",
+    )
+    subparser.add_argument(
         "prefix",
         help="location of new subspack instance",
     )
