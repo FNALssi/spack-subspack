@@ -16,6 +16,7 @@ import spack.util.path
 import spack.util.git
 import spack.extensions
 import spack.repo
+from spack.store import parse_install_tree
 
 config = spack.config.CONFIG
 
@@ -146,8 +147,8 @@ def merge_upstreams(prefix, args):
     )
 
     if config.get("config:install_tree:padded_length", 0) > 0:
-        # find __...padded directories add to upstream_inst_root...
-        pass
+        itree = parse_install_tree(config.get('config'))
+        upstream_inst_root = itree[0]
 
     tcl_modules = config.get(
         "modules:default:roots:tcl", f"{prefix}/share/spack/modules"
