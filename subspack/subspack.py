@@ -2,6 +2,7 @@ import os
 import glob
 import shutil
 import time
+from collections import OrderedDict
 from contextlib import contextmanager
 
 import spack.config
@@ -15,6 +16,7 @@ import spack.util.path
 import spack.util.git
 import spack.extensions
 import spack.repo
+from spack.store import parse_install_tree
 
 config = spack.config.CONFIG
 
@@ -26,7 +28,7 @@ def make_subspack(args):
     quick_clone(prefix, args)
     tty.debug("Cloning extensions...")
     quick_clone_ext(prefix, args)
-    tty.debug("Cloning repos...")
+    tty.debug("Cloning repos... here")
     quick_clone_repos(prefix, args)
     tty.debug("Merging upstreams files...")
     merge_upstreams(prefix, args)
@@ -105,20 +107,29 @@ def quick_clone(prefix, args):
 
 def quick_clone_repos(prefix, args):
     """clone the other recipe repositories"""
+    tty.debug(f"quick_clone_repos: starting")
     git = spack.util.git.git(required=True)
     roots = spack.config.get("repos", scope=None)
     repos = []
+    tty.debug(f"quick_clone_repos: roots: {repr(roots)}")
+
     if isinstance(roots, dict):
-        for repo_name in repos:
+        tty.debug("dict case")
+        for repo_name in roots:
+            tty.debug(f"repo {repo_name}")
             base = repo_name
-            dest = repos[repo_name]["destination"]
-            if os.path.exists(f"{dest}/.git"):
-                git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
+            dest = roots[repo_name]["destination"]
+            src = dest.replace('$spack', os.environ['SPACK_ROOT'])
+            dest = dest.replace('$spack', prefix)
+            if os.path.exists(f"{src}/.git"):
+                tty.debug("cloning {src} to {dest}")
+                git("clone", "-q", "--depth", "2", f"file://{src}/.git", dest)
             else:
+                tty.debug("symlinking {src} to {dest}")
                 # non-git repo, and not already there, symlink it?
-                src = dest.replace('$spack', os.environ['SPACK_ROOT'])
                 os.symlink(src, dest)
     else:
+        tty.debug("else case")
         for r in roots:
             repos.append(r)
         for repo in repos:
@@ -132,6 +143,11 @@ def quick_clone_repos(prefix, args):
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
 
+    # write new repo config
+    tty.debug(f"quick_clone_repos: writing {prefix}/etc/spack/repos.yaml")
+    repos = {"repos": roots}
+    with open(f"{prefix}/etc/spack/repos.yaml", "w") as f:
+        syaml.dump(repos, f)
 
 def quick_clone_ext(prefix, args):
     git = spack.util.git.git(required=True)
@@ -162,8 +178,8 @@ def merge_upstreams(prefix, args):
     )
 
     if config.get("config:install_tree:padded_length", 0) > 0:
-        # find __...padded directories add to upstream_inst_root...
-        pass
+        itree = parse_install_tree(config.get('config'))
+        upstream_inst_root = itree[0]
 
     tcl_modules = config.get(
         "modules:default:roots:tcl", f"{prefix}/share/spack/modules"
@@ -229,9 +245,6 @@ def symlink_environments(prefix, args):
         base = os.path.basename(e)
         os.symlink(e, f"{ed}/{base}")
 
-    repos = {"repos": config.get("repos")}
-    with open(f"{prefix}/etc/spack/repos.yaml", "w") as f:
-        syaml.dump(repos, f)
 
 
 def copy_local_environments(prefix, args):
