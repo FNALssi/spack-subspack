@@ -163,11 +163,11 @@ def clone_various_configs(prefix, args):
     # the -name arg is boot*.yaml pack*.yaml comp*.yaml interleaved..
     # sorry, some things are just easier in shell...
     if args.without_caches:
-        # interleaved pack/conf/comp
-        pattern="[pc][ao][cmn][kfp]*.yaml"
+        # interleaved pack/conf/comp/incl
+        pattern="[pci][aon][cmn][kfpl]*.yaml"
     else:
-        # interleaved pack/conf/comp/mirr
-        pattern="[pcm][aoi][cmnr][kfpr]*.yaml"
+        # interleaved pack/conf/comp/mirr/incl
+        pattern="[ipcm][aoin][cmnr][lkfpr]*.yaml"
 
     os.system(
         f"""
