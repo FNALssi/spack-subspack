@@ -177,6 +177,11 @@ def clone_various_configs(prefix, args):
     """
     )
 
+    # also make sure there is an etc/spack/base directory
+    basedir = f"{prefix}/etc/spack/base"
+    if (not os.path.isdir(basedir) ):
+        os.mkdir( basedir )
+
     root = spack.config.get("bootstrap:root", default=None)
     if root:
         root = spack.util.path.canonicalize_path(root)
