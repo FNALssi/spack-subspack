@@ -79,7 +79,7 @@ def add_padding(prefix, args):
     """turn on standard Fermi build-instance padding"""
     if args.with_padding:
         with open(f"{prefix}/etc/spack/config.yaml", "w") as fco:
-            fco.write("config:\n  install_tree:\n    padded_length: 255\n")
+            fco.write("config:\n  install_tree:\n    padded_length: 128\n")
 
 
 def quick_clone(prefix, args):
