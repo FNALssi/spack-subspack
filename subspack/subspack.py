@@ -38,7 +38,7 @@ def make_subspack(args):
     symlink_environments(prefix, args)
     tty.debug("making local_xxx environments:")
     copy_local_environments(prefix, args)
-    tty.debug("adding wrapped setup-env.* scritsp:")
+    tty.debug("adding wrapped setup-env.* scripts:")
     add_local_setup_env(prefix, args)
     tty.debug("adding padding if requested")
     add_padding(prefix, args)
@@ -117,16 +117,20 @@ def quick_clone_repos(prefix, args):
         tty.debug("dict case")
         for repo_name in roots:
             tty.debug(f"repo {repo_name}")
+            tty.debug(f"roots[repo_name] is {repr(roots[repo_name])}")
             base = repo_name
-            dest = roots[repo_name]["destination"]
+            if isinstance(roots[repo_name], dict):
+                dest = roots[repo_name]["destination"]
+            else:
+                dest = roots[repo_name]
             src = dest.replace('$spack', os.environ['SPACK_ROOT'])
-            dest = dest.replace('$spack', prefix)
+            dest = dest.replace('$spack', prefix).replace(os.environ['SPACK_ROOT'],prefix)
             if os.path.exists(f"{src}/.git"):
                 tty.debug("cloning {src} to {dest}")
                 git("config", "--global", "--add", "safe.directory", f"file://{src}/.git")
                 git("clone", "-q", "--depth", "2", f"file://{src}/.git", dest)
             else:
-                tty.debug("symlinking {src} to {dest}")
+                tty.debug(f"symlinking {src} to {dest}")
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
     else:
