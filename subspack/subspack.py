@@ -198,7 +198,7 @@ def quick_clone_ext(prefix, args):
                 with fs.working_dir(path):
                     with os.popen("git branch --show-current") as fin:
                         branch = fin.read().strip()
-                with fs.working_dir(upath):
+                with fs.working_dir(dest):
                     git("pull", "upstream_origin", branch)
 
         elif not os.path.exists(dest):
