@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 import shutil
 import time
 from collections import OrderedDict
@@ -49,10 +50,12 @@ def make_subspack(args):
 def add_upstream_origin(src, dest):
     """ if the upstream repository at src has an "origin", add it to the repostory at dest as "upstream_origin" """
     path = None
+    git = spack.util.git.git(required=True)
     with fs.working_dir(src):
         with os.popen("git remote -v") as gitout:
             for line in gitout:
-                repo, path, direction = line.split(" ")
+                print("got: ", line)
+                repo, path, direction = re.split("\s+", line.strip())
                 if repo == "origin":
                      break
     if path:
@@ -115,14 +118,14 @@ def quick_clone(prefix, args):
             branch = bf.read().strip(" *\n")
         args.remote = "file://" + args.remote
 
-    args = ["clone", "-q", "--depth", "2", args.remote, prefix]
+    git_args = ["clone", "-q", "--depth", "2", args.remote, prefix]
     if branch:
-        args[1:1] = ["-b", branch]
-    tty.debug(f"Cloning with: git {' '.join(args)}")
-    git(*args)
+        git_args[1:1] = ["-b", branch]
+    tty.debug(f"Cloning with: git {' '.join(git_args)}")
+    git(*git_args)
 
-    if args.remote.startswith("file://"):
-        add_upstream_origin( args.remote[8:], prefix )
+    if args.remote and args.remote.startswith("file://"):
+        add_upstream_origin( args.remote[7:], prefix )
 
 
 def quick_clone_repos(prefix, args):
@@ -138,6 +141,7 @@ def quick_clone_repos(prefix, args):
         for repo_name in roots:
             tty.debug(f"repo {repo_name}")
             tty.debug(f"roots[repo_name] is {repr(roots[repo_name])}")
+            branch = roots[repo_name]['branch']
             base = repo_name
             if isinstance(roots[repo_name], dict):
                 dest = roots[repo_name]["destination"]
@@ -148,11 +152,11 @@ def quick_clone_repos(prefix, args):
             if os.path.exists(f"{src}/.git"):
                 tty.debug("cloning {src} to {dest}")
                 git("config", "--global", "--add", "safe.directory", f"{src}/.git")
-                git("clone", "-q", "--depth", "2", f"file://{src}/.git", dest)
+                git("clone", "-q", "--depth", "2", "-b", branch, f"file://{src}/.git", dest)
                 upath = add_upstream_origin(src, dest)
                 if args.update_recipes and upath:
                     with fs.working_dir(dest):
-                        git("pull", "upstream_origin")
+                        git("pull", "upstream_origin", branch)
 
             else:
                 tty.debug(f"symlinking {src} to {dest}")
@@ -191,8 +195,11 @@ def quick_clone_ext(prefix, args):
             git("clone", "-q", "--depth", "2", f"file://{path}/.git", dest)
             upath = add_upstream_origin(path, dest)
             if args.update_extensions and upath:
+                with fs.working_dir(path):
+                    with os.popen("git branch --show-current") as fin:
+                        branch = fin.read().strip()
                 with fs.working_dir(upath):
-                    git("pull", "upstream_origin")
+                    git("pull", "upstream_origin", branch)
 
         elif not os.path.exists(dest):
             # non-git repo, and not already there, symlink it?
