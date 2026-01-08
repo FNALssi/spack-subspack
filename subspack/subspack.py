@@ -8,6 +8,7 @@ from contextlib import contextmanager
 
 import spack.config
 import spack.util.path
+
 try:
     import spack.llnl.util.tty as tty
     import spack.llnl.util.filesystem as fs
@@ -47,8 +48,9 @@ def make_subspack(args):
     add_padding(prefix, args)
     add_upstream(prefix, args.add_upstream)
 
+
 def add_upstream_origin(src, dest):
-    """ if the upstream repository at src has an "origin", add it to the repostory at dest as "upstream_origin" """
+    """if the upstream repository at src has an "origin", add it to the repostory at dest as "upstream_origin" """
     path = None
     git = spack.util.git.git(required=True)
     with fs.working_dir(src):
@@ -56,7 +58,7 @@ def add_upstream_origin(src, dest):
             for line in gitout:
                 repo, path, direction = re.split("\s+", line.strip())
                 if repo == "origin":
-                     break
+                    break
     if path:
         with fs.working_dir(dest):
             git("remote", "add", "upstream_origin", path)
@@ -68,7 +70,7 @@ def add_upstream(prefix, spack_roots):
     with open(f"{prefix}/etc/spack/upstreams.yaml", "r") as f:
         upstream_data = syaml.load(f)
 
-    count=0
+    count = 0
     for r in spack_roots:
         tty.debug("adding upstream: ", r)
 
@@ -77,11 +79,20 @@ def add_upstream(prefix, spack_roots):
         # read config.yaml data from desired upstream
         cmd = f"SPACK_ROOT={r} spack config get config"
         with os.popen(cmd, "r") as f:
-             upstream_config = syaml.load(f)
-         
-        upstream_inst_root = upstream_config["config"]["install_tree"]["root"].replace("$spack", r)
-        if upstream_config.get("modules", {}).get("default",{}).get("roots",{}).get("tcl",""):
-            tcl_modules = upstream_config["modules"]["default"]["roots"]["tcl"].replace("$spack", r)
+            upstream_config = syaml.load(f)
+
+        upstream_inst_root = upstream_config["config"]["install_tree"]["root"].replace(
+            "$spack", r
+        )
+        if (
+            upstream_config.get("modules", {})
+            .get("default", {})
+            .get("roots", {})
+            .get("tcl", "")
+        ):
+            tcl_modules = upstream_config["modules"]["default"]["roots"]["tcl"].replace(
+                "$spack", r
+            )
         else:
             tcl_modules = f"{r}/share/spack/modules"
 
@@ -124,7 +135,7 @@ def quick_clone(prefix, args):
     git(*git_args)
 
     if args.remote and args.remote.startswith("file://"):
-        add_upstream_origin( args.remote[7:], prefix )
+        add_upstream_origin(args.remote[7:], prefix)
 
 
 def quick_clone_repos(prefix, args):
@@ -140,18 +151,29 @@ def quick_clone_repos(prefix, args):
         for repo_name in roots:
             tty.debug(f"repo {repo_name}")
             tty.debug(f"roots[repo_name] is {repr(roots[repo_name])}")
-            branch = roots[repo_name]['branch']
+            branch = roots[repo_name]["branch"]
             base = repo_name
             if isinstance(roots[repo_name], dict):
                 dest = roots[repo_name]["destination"]
             else:
                 dest = roots[repo_name]
-            src = dest.replace('$spack', os.environ['SPACK_ROOT'])
-            dest = dest.replace('$spack', prefix).replace(os.environ['SPACK_ROOT'],prefix)
+            src = dest.replace("$spack", os.environ["SPACK_ROOT"])
+            dest = dest.replace("$spack", prefix).replace(
+                os.environ["SPACK_ROOT"], prefix
+            )
             if os.path.exists(f"{src}/.git"):
                 tty.debug("cloning {src} to {dest}")
                 git("config", "--global", "--add", "safe.directory", f"{src}/.git")
-                git("clone", "-q", "--depth", "2", "-b", branch, f"file://{src}/.git", dest)
+                git(
+                    "clone",
+                    "-q",
+                    "--depth",
+                    "2",
+                    "-b",
+                    branch,
+                    f"file://{src}/.git",
+                    dest,
+                )
                 upath = add_upstream_origin(src, dest)
                 if args.update_recipes and upath:
                     with fs.working_dir(dest):
@@ -167,8 +189,8 @@ def quick_clone_repos(prefix, args):
             repos.append(r)
         for repo in repos:
             src = str(repo)
-            repo = src.replace('$spack', os.environ['SPACK_ROOT'])
-            base=os.path.basename(repo)
+            repo = src.replace("$spack", os.environ["SPACK_ROOT"])
+            base = os.path.basename(repo)
             dest = f"{prefix}/var/spack/repos/{base}"
             if os.path.exists(f"{repo}/.git"):
                 git("config", "--global", "--add", "safe.directory", f"{repo}")
@@ -182,6 +204,7 @@ def quick_clone_repos(prefix, args):
     repos = {"repos": roots}
     with open(f"{prefix}/etc/spack/repos.yaml", "w") as f:
         syaml.dump(repos, f)
+
 
 def quick_clone_ext(prefix, args):
     git = spack.util.git.git(required=True)
@@ -221,7 +244,7 @@ def merge_upstreams(prefix, args):
     )
 
     if config.get("config:install_tree:padded_length", 0) > 0:
-        itree = parse_install_tree(config.get('config'))
+        itree = parse_install_tree(config.get("config"))
         upstream_inst_root = itree[0]
 
     tcl_modules = config.get(
@@ -254,10 +277,10 @@ def clone_various_configs(prefix, args):
     # sorry, some things are just easier in shell...
     if args.without_caches:
         # interleaved pack/conf/comp/incl
-        pattern="[pci][aon][cmn][kfpl]*.yaml"
+        pattern = "[pci][aon][cmn][kfpl]*.yaml"
     else:
         # interleaved pack/conf/comp/mirr/incl
-        pattern="[ipcm][aoin][cmnr][lkfpr]*.yaml"
+        pattern = "[ipcm][aoin][cmnr][lkfpr]*.yaml"
 
     os.system(
         f"""
@@ -269,8 +292,8 @@ def clone_various_configs(prefix, args):
 
     # also make sure there is an etc/spack/base directory
     basedir = f"{prefix}/etc/spack/base"
-    if (not os.path.isdir(basedir) ):
-        os.mkdir( basedir )
+    if not os.path.isdir(basedir):
+        os.mkdir(basedir)
 
     root = spack.config.get("bootstrap:root", default=None)
     if root:
@@ -292,7 +315,6 @@ def symlink_environments(prefix, args):
     for e in env_list:
         base = os.path.basename(e)
         os.symlink(e, f"{ed}/{base}")
-
 
 
 def copy_local_environments(prefix, args):

@@ -33,7 +33,9 @@ def setup_parser(subparser):
         help="environment(s) to make local versions of",
     )
     subparser.add_argument("--remote", default=None, help="git remote to clone from")
-    subparser.add_argument("--remote-branch", default=None, help="git remote to clone from")
+    subparser.add_argument(
+        "--remote-branch", default=None, help="git remote to clone from"
+    )
     subparser.add_argument(
         "--dev-pkg",
         "--dev_pkg",
