@@ -51,6 +51,18 @@ def setup_parser(subparser):
         "prefix",
         help="location of new subspack instance",
     )
+    subparser.add_argument(
+        "--update-recipes",
+        action="store_true",
+        default=False,
+        help="update package recipe repositories from their upstreams' origins",
+    )
+    subparser.add_argument(
+        "--update-extensions",
+        action="store_true",
+        default=False,
+        help="update extension repositories from their upstreams' origins",
+    )
 
 
 def subspack(parser, args):

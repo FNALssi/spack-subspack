@@ -9,8 +9,10 @@ import spack.config
 import spack.util.path
 try:
     import spack.llnl.util.tty as tty
+    import spack.llnl.util.filesystem as fs
 except:
     import llnl.util.tty as tty
+    import llnl.util.filesystem as fs
 import spack.util.spack_yaml as syaml
 import spack.util.path
 import spack.util.git
@@ -43,6 +45,21 @@ def make_subspack(args):
     tty.debug("adding padding if requested")
     add_padding(prefix, args)
     add_upstream(prefix, args.add_upstream)
+
+def add_upstream_origin(src, dest):
+    """ if the upstream repository at src has an "origin", add it to the repostory at dest as "upstream_origin" """
+    path = None
+    with fs.working_dir(src):
+        with os.popen("git remote -v") as gitout:
+            for line in gitout:
+                repo, path, direction = line.split(" ")
+                if repo == "origin":
+                     break
+    if path:
+        with fs.working_dir(dest):
+            git("remote", "add", "upstream_origin", path)
+    return path
+
 
 def add_upstream(prefix, spack_roots):
     # get current upstreams
@@ -104,6 +121,9 @@ def quick_clone(prefix, args):
     tty.debug(f"Cloning with: git {' '.join(args)}")
     git(*args)
 
+    if args.remote.startswith("file://"):
+        add_upstream_origin( args.remote[8:], prefix )
+
 
 def quick_clone_repos(prefix, args):
     """clone the other recipe repositories"""
@@ -129,6 +149,11 @@ def quick_clone_repos(prefix, args):
                 tty.debug("cloning {src} to {dest}")
                 git("config", "--global", "--add", "safe.directory", f"{src}/.git")
                 git("clone", "-q", "--depth", "2", f"file://{src}/.git", dest)
+                upath = add_upstream_origin(src, dest)
+                if args.update_recipes and upath:
+                    with fs.working_dir(dest):
+                        git("pull", "upstream_origin")
+
             else:
                 tty.debug(f"symlinking {src} to {dest}")
                 # non-git repo, and not already there, symlink it?
@@ -164,6 +189,11 @@ def quick_clone_ext(prefix, args):
             dest = f"{prefix}/var/spack/extensions/{base}"
             git("config", "--global", "--add", "safe.directory", f"{path}/.git")
             git("clone", "-q", "--depth", "2", f"file://{path}/.git", dest)
+            upath = add_upstream_origin(path, dest)
+            if args.update_extensions and upath:
+                with fs.working_dir(upath):
+                    git("pull", "upstream_origin")
+
         elif not os.path.exists(dest):
             # non-git repo, and not already there, symlink it?
             os.symlink(path, dest)
