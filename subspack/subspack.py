@@ -54,7 +54,6 @@ def add_upstream_origin(src, dest):
     with fs.working_dir(src):
         with os.popen("git remote -v") as gitout:
             for line in gitout:
-                print("got: ", line)
                 repo, path, direction = re.split("\s+", line.strip())
                 if repo == "origin":
                      break
