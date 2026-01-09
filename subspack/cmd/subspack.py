@@ -33,7 +33,9 @@ def setup_parser(subparser):
         help="environment(s) to make local versions of",
     )
     subparser.add_argument("--remote", default=None, help="git remote to clone from")
-    subparser.add_argument("--remote-branch", default=None, help="git remote to clone from")
+    subparser.add_argument(
+        "--remote-branch", default=None, help="git remote to clone from"
+    )
     subparser.add_argument(
         "--dev-pkg",
         "--dev_pkg",
@@ -50,6 +52,18 @@ def setup_parser(subparser):
     subparser.add_argument(
         "prefix",
         help="location of new subspack instance",
+    )
+    subparser.add_argument(
+        "--update-recipes",
+        action="store_true",
+        default=False,
+        help="update package recipe repositories from their upstreams' origins",
+    )
+    subparser.add_argument(
+        "--update-extensions",
+        action="store_true",
+        default=False,
+        help="update extension repositories from their upstreams' origins",
     )
 
 
