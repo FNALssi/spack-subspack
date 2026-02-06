@@ -119,9 +119,11 @@ def quick_clone(prefix, args):
     else:
         branch = None
     git = spack.util.git.git(required=True)
+    cleanup = None
     if not args.remote:
         args.remote = os.environ["SPACK_ROOT"] + "/.git"
         git("config", "--global", "--add", "safe.directory", args.remote)
+        cleanup = args.remote
 
     if args.remote.startswith("/") and not branch:
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
@@ -133,6 +135,9 @@ def quick_clone(prefix, args):
         git_args[1:1] = ["-b", branch]
     tty.debug(f"Cloning with: git {' '.join(git_args)}")
     git(*git_args)
+
+    if cleanup:
+        git("config", "--global", "--unset", "safe.directory", cleanup)
 
     if args.remote and args.remote.startswith("file://"):
         add_upstream_origin(args.remote[7:], prefix)
