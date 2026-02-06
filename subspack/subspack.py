@@ -174,6 +174,7 @@ def quick_clone_repos(prefix, args):
                     f"file://{src}/.git",
                     dest,
                 )
+                git("config", "--global", "--unset", "safe.directory", f"{src}/.git")
                 upath = add_upstream_origin(src, dest)
                 if args.update_recipes and upath:
                     with fs.working_dir(dest):
@@ -195,6 +196,7 @@ def quick_clone_repos(prefix, args):
             if os.path.exists(f"{repo}/.git"):
                 git("config", "--global", "--add", "safe.directory", f"{repo}")
                 git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
+                git("config", "--global", "--unset", "safe.directory", f"{repo}")
             elif not os.path.exists(dest):
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
@@ -215,6 +217,7 @@ def quick_clone_ext(prefix, args):
             dest = f"{prefix}/var/spack/extensions/{base}"
             git("config", "--global", "--add", "safe.directory", f"{path}/.git")
             git("clone", "-q", "--depth", "2", f"file://{path}/.git", dest)
+            git("config", "--global", "--unset", "safe.directory", f"{path}/.git")
             upath = add_upstream_origin(path, dest)
             if args.update_extensions and upath:
                 with fs.working_dir(path):
