@@ -28,11 +28,14 @@ After cloning the repository somewhere, See the [Spack docs](https://spack.readt
 ### Using with spack localbuildcache and jobsub_submit
 
 If you make an environment in a subspack instance (that was made --with-padding)
-
-spack env activate myenvironment 
+```
+spack env activate myenvironment
 spack localbuildcache --local
+```
 You can now send reconstruct an environment in a job by using jobsub options
+
 `--tar-file-name=tardir:///path/to/myenvironment/bc -f reconstitute.bash`
+
 then in your job script:
 ```
   bash $INPUT_TAR_DIR_LOCAL/reconstitute.bash
