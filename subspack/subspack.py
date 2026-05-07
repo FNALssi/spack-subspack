@@ -233,7 +233,7 @@ def quick_clone_ext(prefix, args):
             dest = f"{prefix}/var/spack/extensions/{base}"
             try:
                 git("config", "--global", "--unset-all", "safe.directory", f"{path}/.git")
-                git("config", "--global", "--unset-all", "safe.directory", path")
+                git("config", "--global", "--unset-all", "safe.directory", path)
             except:
                 pass
             git("config", "--global", "--add", "safe.directory", f"{path}/.git")
