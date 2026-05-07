@@ -230,10 +230,10 @@ def quick_clone_ext(prefix, args):
         if os.path.exists(f"{path}/.git"):
             dest = f"{prefix}/var/spack/extensions/{base}"
             try:
-                git("config", "--global", "--unset-all", "safe.directory", path)
+                git("config", "--global", "--unset-all", "safe.directory", f"{path}/.git")
             except:
                 pass
-            git("config", "--global", "--add", "safe.directory", path)
+            git("config", "--global", "--add", "safe.directory", f"{path}/.git")
             git("clone", "-q", "--depth", "2", f"file://{path}/.git", dest)
             upath = add_upstream_origin(path, dest)
             if args.update_extensions and upath:
