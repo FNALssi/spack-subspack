@@ -172,10 +172,10 @@ def quick_clone_repos(prefix, args):
             if os.path.exists(f"{src}/.git"):
                 tty.debug("cloning {src} to {dest}")
                 try:
-                    git("config", "--global", "--unset-all", "safe.directory", src)
+                    git("config", "--global", "--unset-all", "safe.directory", f"{src}/.git")
                 except:
                     pass
-                git("config", "--global", "--add", "safe.directory", src)
+                git("config", "--global", "--add", "safe.directory", f"{src}/.git")
                 git(
                     "clone",
                     "-q",
