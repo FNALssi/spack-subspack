@@ -173,9 +173,11 @@ def quick_clone_repos(prefix, args):
                 tty.debug("cloning {src} to {dest}")
                 try:
                     git("config", "--global", "--unset-all", "safe.directory", f"{src}/.git")
+                    git("config", "--global", "--unset-all", "safe.directory", src)
                 except:
                     pass
                 git("config", "--global", "--add", "safe.directory", f"{src}/.git")
+                git("config", "--global", "--add", "safe.directory", src)
                 git(
                     "clone",
                     "-q",
@@ -231,9 +233,11 @@ def quick_clone_ext(prefix, args):
             dest = f"{prefix}/var/spack/extensions/{base}"
             try:
                 git("config", "--global", "--unset-all", "safe.directory", f"{path}/.git")
+                git("config", "--global", "--unset-all", "safe.directory", path")
             except:
                 pass
             git("config", "--global", "--add", "safe.directory", f"{path}/.git")
+            git("config", "--global", "--add", "safe.directory", path)
             git("clone", "-q", "--depth", "2", f"file://{path}/.git", dest)
             upath = add_upstream_origin(path, dest)
             if args.update_extensions and upath:
