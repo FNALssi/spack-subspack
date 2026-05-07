@@ -122,13 +122,13 @@ def quick_clone(prefix, args):
     cleanup = None
     if not args.remote:
         args.remote = os.environ["SPACK_ROOT"]
+        args.remote += "/.git"
         # remove all and add the diretory to prevent duplication
         try:
             git("config", "--global", "--unset-all", "safe.directory", args.remote)
         except:
             pass
         git("config", "--global", "--add", "safe.directory", args.remote)
-        args.remote += "/.git"
 
     if args.remote.startswith("/") and not branch:
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
