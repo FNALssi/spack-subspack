@@ -122,6 +122,8 @@ def quick_clone(prefix, args):
     cleanup = None
     if not args.remote:
         args.remote = os.environ["SPACK_ROOT"] + "/.git"
+        # remove all and add the diretory to prevent duplication
+        git("config", "--global", "--unset-all", "safe.directory", args.remote)
         git("config", "--global", "--add", "safe.directory", args.remote)
         cleanup = args.remote
 
@@ -136,8 +138,6 @@ def quick_clone(prefix, args):
     tty.debug(f"Cloning with: git {' '.join(git_args)}")
     git(*git_args)
 
-    if cleanup:
-        git("config", "--global", "--unset", "safe.directory", cleanup)
 
     if args.remote and args.remote.startswith("file://"):
         add_upstream_origin(args.remote[7:], prefix)
@@ -168,6 +168,7 @@ def quick_clone_repos(prefix, args):
             )
             if os.path.exists(f"{src}/.git"):
                 tty.debug("cloning {src} to {dest}")
+                git("config", "--global", "--unset-all", "safe.directory", f"{src}/.git")
                 git("config", "--global", "--add", "safe.directory", f"{src}/.git")
                 git(
                     "clone",
@@ -179,7 +180,6 @@ def quick_clone_repos(prefix, args):
                     f"file://{src}/.git",
                     dest,
                 )
-                git("config", "--global", "--unset", "safe.directory", f"{src}/.git")
                 upath = add_upstream_origin(src, dest)
                 if args.update_recipes and upath:
                     with fs.working_dir(dest):
@@ -199,9 +199,10 @@ def quick_clone_repos(prefix, args):
             base = os.path.basename(repo)
             dest = f"{prefix}/var/spack/repos/{base}"
             if os.path.exists(f"{repo}/.git"):
+                git("config", "--global", "--unset-all", "safe.directory", f"{src}/.git")
+                git("config", "--global", "--unset", "safe.directory", f"{src}/.git")
                 git("config", "--global", "--add", "safe.directory", f"{repo}")
                 git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
-                git("config", "--global", "--unset", "safe.directory", f"{repo}")
             elif not os.path.exists(dest):
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
