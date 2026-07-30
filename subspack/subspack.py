@@ -159,7 +159,10 @@ def quick_clone_repos(prefix, args):
         for repo_name in roots:
             tty.debug(f"repo {repo_name}")
             tty.debug(f"roots[repo_name] is {repr(roots[repo_name])}")
-            branch = roots[repo_name].get("branch", "main")
+            if isinstance(roogs[repo_name], dict):
+                branch = roots[repo_name].get("branch", "main")
+            else:
+                branch = "main"
             base = repo_name
             if isinstance(roots[repo_name], dict):
                 dest = roots[repo_name]["destination"]
