@@ -198,6 +198,8 @@ def quick_clone_repos(prefix, args):
 
             else:
                 tty.debug(f"symlinking {src} to {dest}")
+                if not os.path.exists(os.path.dirname(dest)):
+                     os.makedirs(os.path.dirname(dest))
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
     else:
