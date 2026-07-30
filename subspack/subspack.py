@@ -121,9 +121,14 @@ def quick_clone(prefix, args):
     git = spack.util.git.git(required=True)
     cleanup = None
     if not args.remote:
-        args.remote = os.environ["SPACK_ROOT"] + "/.git"
+        args.remote = os.environ["SPACK_ROOT"]
+        args.remote += "/.git"
+        # remove all and add the diretory to prevent duplication
+        try:
+            git("config", "--global", "--unset-all", "safe.directory", args.remote)
+        except:
+            pass
         git("config", "--global", "--add", "safe.directory", args.remote)
-        cleanup = args.remote
 
     if args.remote.startswith("/") and not branch:
         with os.popen(f"cd {args.remote} && git branch | grep '\\*'") as bf:
@@ -136,8 +141,6 @@ def quick_clone(prefix, args):
     tty.debug(f"Cloning with: git {' '.join(git_args)}")
     git(*git_args)
 
-    if cleanup:
-        git("config", "--global", "--unset", "safe.directory", cleanup)
 
     if args.remote and args.remote.startswith("file://"):
         add_upstream_origin(args.remote[7:], prefix)
@@ -168,7 +171,13 @@ def quick_clone_repos(prefix, args):
             )
             if os.path.exists(f"{src}/.git"):
                 tty.debug("cloning {src} to {dest}")
+                try:
+                    git("config", "--global", "--unset-all", "safe.directory", f"{src}/.git")
+                    git("config", "--global", "--unset-all", "safe.directory", src)
+                except:
+                    pass
                 git("config", "--global", "--add", "safe.directory", f"{src}/.git")
+                git("config", "--global", "--add", "safe.directory", src)
                 git(
                     "clone",
                     "-q",
@@ -179,7 +188,6 @@ def quick_clone_repos(prefix, args):
                     f"file://{src}/.git",
                     dest,
                 )
-                git("config", "--global", "--unset", "safe.directory", f"{src}/.git")
                 upath = add_upstream_origin(src, dest)
                 if args.update_recipes and upath:
                     with fs.working_dir(dest):
@@ -199,9 +207,12 @@ def quick_clone_repos(prefix, args):
             base = os.path.basename(repo)
             dest = f"{prefix}/var/spack/repos/{base}"
             if os.path.exists(f"{repo}/.git"):
-                git("config", "--global", "--add", "safe.directory", f"{repo}")
+                try:
+                    git("config", "--global", "--unset-all", "safe.directory", src)
+                except:
+                    pass
+                git("config", "--global", "--add", "safe.directory", repo)
                 git("clone", "-q", "--depth", "2", f"file://{repo}", dest)
-                git("config", "--global", "--unset", "safe.directory", f"{repo}")
             elif not os.path.exists(dest):
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
@@ -220,9 +231,14 @@ def quick_clone_ext(prefix, args):
         base = os.path.basename(path)
         if os.path.exists(f"{path}/.git"):
             dest = f"{prefix}/var/spack/extensions/{base}"
+            try:
+                git("config", "--global", "--unset-all", "safe.directory", f"{path}/.git")
+                git("config", "--global", "--unset-all", "safe.directory", path)
+            except:
+                pass
             git("config", "--global", "--add", "safe.directory", f"{path}/.git")
+            git("config", "--global", "--add", "safe.directory", path)
             git("clone", "-q", "--depth", "2", f"file://{path}/.git", dest)
-            git("config", "--global", "--unset", "safe.directory", f"{path}/.git")
             upath = add_upstream_origin(path, dest)
             if args.update_extensions and upath:
                 with fs.working_dir(path):
