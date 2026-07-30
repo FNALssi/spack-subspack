@@ -319,9 +319,12 @@ def clone_various_configs(prefix, args):
     if not os.path.isdir(basedir):
         os.mkdir(basedir)
 
-    root = spack.config.get("bootstrap:root", default=None)
-    if root:
-        root = spack.util.path.canonicalize_path(root)
+    if args.local_bootstrap:
+        root = spack.config.get("bootstrap:root", default=None)
+        if root:
+            root = spack.util.path.canonicalize_path(root)
+    else:
+        root = f"{prefix}/var/spack/.bootstrap"
 
     with tmp_env("SPACK_ROOT", prefix):
         os.system(f"{prefix}/bin/spack bootstrap root {root} > /dev/null")

@@ -65,6 +65,12 @@ def setup_parser(subparser):
         default=False,
         help="update extension repositories from their upstreams' origins",
     )
+    subparser.add_argument(
+        "--local-bootstrap",
+        action="store_true",
+        default=False,
+        help="Do not share spack bootstrap area with upstream",
+    )
 
 
 def subspack(parser, args):
