@@ -159,7 +159,10 @@ def quick_clone_repos(prefix, args):
         for repo_name in roots:
             tty.debug(f"repo {repo_name}")
             tty.debug(f"roots[repo_name] is {repr(roots[repo_name])}")
-            branch = roots[repo_name]["branch"]
+            if "branch" in roots[repo_name]:
+                branch = roots[repo_name].get("branch", "main")
+            else:
+                branch = "main"
             base = repo_name
             if isinstance(roots[repo_name], dict):
                 dest = roots[repo_name]["destination"]
@@ -195,6 +198,8 @@ def quick_clone_repos(prefix, args):
 
             else:
                 tty.debug(f"symlinking {src} to {dest}")
+                if not os.path.exists(os.path.dirname(dest)):
+                     os.makedirs(os.path.dirname(dest))
                 # non-git repo, and not already there, symlink it?
                 os.symlink(src, dest)
     else:
@@ -319,9 +324,11 @@ def clone_various_configs(prefix, args):
     if not os.path.isdir(basedir):
         os.mkdir(basedir)
 
-    root = spack.config.get("bootstrap:root", default=None)
-    if root:
-        root = spack.util.path.canonicalize_path(root)
+    root = f"{prefix}/var/spack/.bootstrap"
+    if args.upstream_bootstrap:
+        uroot = spack.config.get("bootstrap:root", default=None)
+        if uroot:
+            root = spack.util.path.canonicalize_path(uroot)
 
     with tmp_env("SPACK_ROOT", prefix):
         os.system(f"{prefix}/bin/spack bootstrap root {root} > /dev/null")
