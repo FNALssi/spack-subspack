@@ -50,7 +50,7 @@ def make_subspack(args):
 
 
 def add_upstream_origin(src, dest):
-    """if the upstream repository at src has an "origin", add it to the repostory at dest as "upstream_origin" """
+    """if the upstream repository at src has an "origin", add it to the repostory and make the current origin "upstream" """
     path = None
     git = spack.util.git.git(required=True)
     with fs.working_dir(src):
@@ -61,7 +61,8 @@ def add_upstream_origin(src, dest):
                     break
     if path:
         with fs.working_dir(dest):
-            git("remote", "add", "upstream_origin", path)
+            git("remote", "rename", "origin", "upstream")
+            git("remote", "add", "origin", path)
     return path
 
 
