@@ -379,6 +379,7 @@ def add_local_setup_env(prefix, args):
             f"""
 export SPACK_SKIP_MODULES=true
 export SPACK_DISABLE_LOCAL_CONFIG=true
+export SPACK_USER_CACHE_PATH=${TMPDIR:-/tmp}/$USER
 . {prefix}/share/spack/setup-env.sh
 """
         )
@@ -387,6 +388,7 @@ export SPACK_DISABLE_LOCAL_CONFIG=true
             f"""
 setenv SPACK_SKIP_MODULES true
 setenv SPACK_DISABLE_LOCAL_CONFIG true
+setenv SPACK_USER_CACHE_PATH ${TMPDIR:-/tmp}/$USER
 source {prefix}/share/spack/setup-env.sh
 """
         )
