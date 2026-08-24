@@ -114,11 +114,13 @@ def add_padding(prefix, args):
         always either write config.yaml, or clean it out, so we don't end
         up with an upstream one that confuses us...
     """
+    cfgpath = f"{prefix}/etc/spack/config.yaml"
     if args.with_padding:
-        with open(f"{prefix}/etc/spack/config.yaml", "w") as fco:
+        with open(cfgpath, "w") as fco:
             fco.write("config:\n  install_tree:\n    padded_length: 128\n")
     else:
-        os.unlink(f"{prefix}/etc/spack/config.yaml")
+        if os.path.exists(cfgpath):
+            os.unlink(cfgpath)
 
 def quick_clone(prefix, args):
     """clone the spack repo, shallow etc."""
