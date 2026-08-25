@@ -102,16 +102,25 @@ def add_upstream(prefix, spack_roots):
             "modules": {"tcl": tcl_modules},
         }
 
-    with open(f"{prefix}/etc/spack/upstreams.yaml", "w") as f:
-        syaml.dump(upstream_data, f)
+    if spack_roots:
+        with open(f"{prefix}/etc/spack/upstreams.yaml", "w") as f:
+            syaml.dump(upstream_data, f)
 
 
 def add_padding(prefix, args):
-    """turn on standard Fermi build-instance padding"""
-    if args.with_padding:
-        with open(f"{prefix}/etc/spack/config.yaml", "w") as fco:
-            fco.write("config:\n  install_tree:\n    padded_length: 128\n")
+    """
+        turn on standard Fermi build-instance padding
 
+        always either write config.yaml, or clean it out, so we don't end
+        up with an upstream one that confuses us...
+    """
+    cfgpath = f"{prefix}/etc/spack/config.yaml"
+    if args.with_padding:
+        with open(cfgpath, "w") as fco:
+            fco.write("config:\n  install_tree:\n    padded_length: 128\n")
+    else:
+        if os.path.exists(cfgpath):
+            os.unlink(cfgpath)
 
 def quick_clone(prefix, args):
     """clone the spack repo, shallow etc."""
@@ -379,6 +388,7 @@ def add_local_setup_env(prefix, args):
             f"""
 export SPACK_SKIP_MODULES=true
 export SPACK_DISABLE_LOCAL_CONFIG=true
+export SPACK_USER_CACHE_PATH=${{TMPDIR:-/tmp}}/$USER
 . {prefix}/share/spack/setup-env.sh
 """
         )
@@ -387,6 +397,7 @@ export SPACK_DISABLE_LOCAL_CONFIG=true
             f"""
 setenv SPACK_SKIP_MODULES true
 setenv SPACK_DISABLE_LOCAL_CONFIG true
+setenv SPACK_USER_CACHE_PATH ${{TMPDIR:-/tmp}}/$USER
 source {prefix}/share/spack/setup-env.sh
 """
         )
