@@ -97,10 +97,12 @@ def add_upstream(prefix, spack_roots):
         else:
             tcl_modules = f"{r}/share/spack/modules"
 
-        upstream_data["upstreams"][f"spack_{count}"] = {
+        k = f"spack_{count}"
+        upstream_data["upstreams"][k] = {
             "install_tree": upstream_inst_root,
             "modules": {"tcl": tcl_modules},
         }
+
 
     if spack_roots:
         with open(f"{prefix}/etc/spack/upstreams.yaml", "w") as f:
@@ -271,12 +273,15 @@ def merge_upstreams(prefix, args):
     """generate upstreams.yaml pointing to us including
     any upstreams we have"""
     # start with our upstreams, if any...
-    upstream_data = config.get("upstreams", None)
-    tty.debug(f"Got upstream data: {repr(upstream_data)}")
-    if upstream_data is None:
-        upstream_data = {"upstreams": {}}
+    uf = f"{os.environ.get('SPACK_ROOT')}/etc/spack/upstreams.yaml"
+    if os.path.exists(uf):
+        with open(uf, "r") as f:
+            upstream_data = syaml.load(f)
     else:
-        upstream_data = {"upstreams": upstream_data}
+        upstream_data = None
+
+    if upstream_data is None:
+        upstream_data =  {"upstreams": {}} 
 
     upstream_inst_root = config.get("config:install_tree:root").replace(
         "$spack", os.environ["SPACK_ROOT"]
@@ -291,10 +296,15 @@ def merge_upstreams(prefix, args):
     )
 
     ds = str(time.time())
-    upstream_data["upstreams"][f"spack_{ds}"] = {
+    k = f"spack_{ds}"
+    upstream_data["upstreams"][k] = {
         "install_tree": upstream_inst_root,
         "modules": {"tcl": tcl_modules},
     }
+    try:
+        upstream_data["upstreams"].move_to_end(k, last=False)
+    except:
+        pass
 
     with open(f"{prefix}/etc/spack/upstreams.yaml", "w") as f:
         syaml.dump(upstream_data, f)
